@@ -1,0 +1,212 @@
+{
+  "info": {
+    "name": "FullStack Estate API",
+    "description": "All endpoints of the FullStack Estate backend. Run 'Sign In' first: Postman stores the httpOnly cookies automatically, and the test scripts save userId / listingId / bookingId into collection variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "userId", "value": "" },
+    { "key": "listingId", "value": "" },
+    { "key": "bookingId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/signup",
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"demo\",\n  \"email\": \"demo@test.com\",\n  \"password\": \"secret123\"\n}" }
+          },
+          "response": [
+            { "name": "201 Created", "code": 201, "status": "Created", "body": "{ \"success\": true, \"message\": \"User created successfully\" }" },
+            { "name": "409 Duplicate", "code": 409, "status": "Conflict", "body": "{ \"success\": false, \"statusCode\": 409, \"message\": \"Email already exists\" }" }
+          ]
+        },
+        {
+          "name": "Sign In",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["if (pm.response.code === 200) { pm.collectionVariables.set('userId', pm.response.json()._id); }"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/signin",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"demo@test.com\",\n  \"password\": \"secret123\"\n}" }
+          },
+          "response": [
+            { "name": "401 Wrong password", "code": 401, "status": "Unauthorized", "body": "{ \"success\": false, \"statusCode\": 401, \"message\": \"Invalid email or password\" }" }
+          ]
+        },
+        {
+          "name": "Google Sign In",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/google",
+            "description": "When FIREBASE_SERVICE_ACCOUNT is set on the server, idToken must be a real Firebase ID token.",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Demo Google\",\n  \"email\": \"demo.google@gmail.com\",\n  \"photo\": \"https://example.com/me.png\",\n  \"idToken\": \"<firebase-id-token>\"\n}" }
+          }
+        },
+        {
+          "name": "Refresh Tokens",
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/refresh" }
+        },
+        {
+          "name": "Sign Out",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/signout" }
+        }
+      ]
+    },
+    {
+      "name": "Listings",
+      "item": [
+        {
+          "name": "Create Listing",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('listingId', pm.response.json()._id); }"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/listing/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sunny 2BHK Apartment\",\n  \"description\": \"Bright apartment close to the metro.\",\n  \"address\": \"12 MG Road, Bengaluru\",\n  \"regularPrice\": 25000,\n  \"discountPrice\": 22000,\n  \"bedrooms\": 2,\n  \"bathrooms\": 2,\n  \"furnished\": true,\n  \"parking\": true,\n  \"offer\": true,\n  \"type\": \"rent\",\n  \"imageUrls\": [\"/uploads/sample.jpg\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Listing",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/listing/get/{{listingId}}" }
+        },
+        {
+          "name": "Search Listings",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/listing/get?searchTerm=apartment&type=rent&offer=false&parking=false&furnished=false&sort=createdAt&order=desc&limit=9&startIndex=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listing", "get"],
+              "query": [
+                { "key": "searchTerm", "value": "apartment" },
+                { "key": "type", "value": "rent" },
+                { "key": "offer", "value": "false" },
+                { "key": "parking", "value": "false" },
+                { "key": "furnished", "value": "false" },
+                { "key": "sort", "value": "createdAt" },
+                { "key": "order", "value": "desc" },
+                { "key": "limit", "value": "9" },
+                { "key": "startIndex", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Listing",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/listing/update/{{listingId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Renovated 2BHK Apartment\"\n}" }
+          },
+          "response": [
+            { "name": "403 Not owner", "code": 403, "status": "Forbidden", "body": "{ \"success\": false, \"statusCode\": 403, \"message\": \"You can only update your own listings\" }" }
+          ]
+        },
+        {
+          "name": "Delete Listing",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/listing/delete/{{listingId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Create Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('bookingId', pm.response.json()._id); }"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/booking/create",
+            "description": "Sign in as a DIFFERENT user than the listing owner first.",
+            "body": { "mode": "raw", "raw": "{\n  \"listingId\": \"{{listingId}}\",\n  \"visitDate\": \"2030-01-15\",\n  \"message\": \"Can I visit on the weekend?\"\n}" }
+          }
+        },
+        {
+          "name": "My Bookings",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/booking/user" }
+        },
+        {
+          "name": "Bookings On My Listings",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/booking/owner" }
+        },
+        {
+          "name": "Update Booking Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/booking/{{bookingId}}/status",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"confirmed\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/user/update/{{userId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"demo_renamed\"\n}" }
+          }
+        },
+        {
+          "name": "My Listings",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/user/listings/{{userId}}" }
+        },
+        {
+          "name": "Get User (contact info)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/user/{{userId}}" }
+        },
+        {
+          "name": "Delete Account",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/user/delete/{{userId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Uploads",
+      "item": [
+        {
+          "name": "Upload Images",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/upload",
+            "description": "form-data, key 'images' (type File). Up to 6 files, 2 MB each, JPEG/PNG/WEBP/GIF.",
+            "body": { "mode": "formdata", "formdata": [{ "key": "images", "type": "file", "src": [] }] }
+          }
+        }
+      ]
+    }
+  ]
+}

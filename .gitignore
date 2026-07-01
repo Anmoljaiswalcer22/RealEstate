@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+
+# secrets
+.env
+.env.*
+!.env.example
+
+# uploaded images
+server/uploads/*
+!server/uploads/.gitkeep
+
+.DS_Store
+*.log
+serviceAccount.json
