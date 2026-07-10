@@ -5,3 +5,4 @@
 - 2026-07-03: feat(server): add MongoDB connection config
 - 2026-07-05: feat(server): set up express app with json and cookie parser
 - 2026-07-05 11:18:34: worked on server (after "feat(server): set up express app with json and cookie parser")
+- 2026-07-10: feat(server): add entry point and /api/health route
