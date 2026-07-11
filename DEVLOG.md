@@ -11,3 +11,4 @@
 - 2026-07-11 11:03:44: worked on server (after "feat(server): add errorHandler helper")
 - 2026-07-11: feat(server): add centralized error middleware
 - 2026-07-11: feat(models): add User model
+- 2026-07-11: feat(auth): signup and signin with bcrypt
