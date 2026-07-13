@@ -13,3 +13,4 @@
 - 2026-07-11: feat(models): add User model
 - 2026-07-11: feat(auth): signup and signin with bcrypt
 - 2026-07-11 17:21:45: worked on auth (after "feat(auth): signup and signin with bcrypt")
+- 2026-07-13: feat(auth): mount auth routes
