@@ -15,3 +15,4 @@
 - 2026-07-11 17:21:45: worked on auth (after "feat(auth): signup and signin with bcrypt")
 - 2026-07-13: feat(auth): mount auth routes
 - 2026-07-14: feat(auth): strip password from user responses
+- 2026-07-14: feat(auth): add verifyToken middleware
