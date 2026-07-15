@@ -17,3 +17,4 @@
 - 2026-07-14: feat(auth): strip password from user responses
 - 2026-07-14: feat(auth): add verifyToken middleware
 - 2026-07-14 23:18:55: worked on auth (after "feat(auth): add verifyToken middleware")
+- 2026-07-15: feat(auth): access and refresh tokens with rotation
