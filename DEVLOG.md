@@ -21,3 +21,4 @@
 - 2026-07-15: feat(models): add Listing model with validators and indexes
 - 2026-07-15: feat(listing): business rules and field whitelist
 - 2026-07-15 14:23:52: worked on listing (after "feat(listing): business rules and field whitelist")
+- 2026-07-16: feat(listing): CRUD, search, filters and pagination
