@@ -23,3 +23,4 @@
 - 2026-07-15 14:23:52: worked on listing (after "feat(listing): business rules and field whitelist")
 - 2026-07-16: feat(listing): CRUD, search, filters and pagination
 - 2026-07-16: feat(listing): add listing routes
+- 2026-07-17: feat(user): update profile, delete account, my listings
