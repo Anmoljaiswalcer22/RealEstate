@@ -26,3 +26,4 @@
 - 2026-07-17: feat(user): update profile, delete account, my listings
 - 2026-07-18 17:19:00: worked on user (after "feat(user): update profile, delete account, my listings")
 - 2026-07-18: feat(user): add user routes
+- 2026-07-19: feat(models): add Booking model
