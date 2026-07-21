@@ -32,3 +32,4 @@
 - 2026-07-21 10:45:44: worked on booking (after "feat(booking): add booking routes")
 - 2026-07-21: feat(upload): add multer config
 - 2026-07-21: feat(upload): upload middleware with size and type limits
+- 2026-07-21: feat(upload): check magic bytes and save to disk
