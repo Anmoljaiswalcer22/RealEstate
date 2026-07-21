@@ -28,3 +28,4 @@
 - 2026-07-18: feat(user): add user routes
 - 2026-07-19: feat(models): add Booking model
 - 2026-07-21: feat(booking): create bookings and update status
+- 2026-07-21: feat(booking): add booking routes
