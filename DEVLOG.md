@@ -30,3 +30,4 @@
 - 2026-07-21: feat(booking): create bookings and update status
 - 2026-07-21: feat(booking): add booking routes
 - 2026-07-21 10:45:44: worked on booking (after "feat(booking): add booking routes")
+- 2026-07-21: feat(upload): add multer config
