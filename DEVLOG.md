@@ -37,3 +37,4 @@
 - 2026-07-22: feat(upload): upload route and static /uploads
 - 2026-07-25: feat(security): requireStrings and validateObjectId middleware
 - 2026-07-31: feat(auth): verify Google ID token with firebase-admin
+- 2026-07-31 11:14:37: worked on auth (after "feat(auth): verify Google ID token with firebase-admin")
