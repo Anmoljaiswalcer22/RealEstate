@@ -39,3 +39,4 @@
 - 2026-07-31: feat(auth): verify Google ID token with firebase-admin
 - 2026-07-31 11:14:37: worked on auth (after "feat(auth): verify Google ID token with firebase-admin")
 - 2026-07-31: test: in-memory MongoDB setup
+- 2026-08-01: test: add data factories
