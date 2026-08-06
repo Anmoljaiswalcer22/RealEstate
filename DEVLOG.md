@@ -45,3 +45,4 @@
 - 2026-08-01: test(listing): CRUD, ownership 403, search and filters
 - 2026-08-06: test(booking): date rules, duplicates, status changes
 - 2026-08-06: test(upload): MIME, size and disguised-file checks
+- 2026-08-06 11:46:13: worked on upload (after "test(upload): MIME, size and disguised-file checks")
