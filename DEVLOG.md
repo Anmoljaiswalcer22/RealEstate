@@ -43,3 +43,4 @@
 - 2026-08-01: test(auth): signup, signin, refresh rotation, google
 - 2026-08-01 16:46:54: worked on auth (after "test(auth): signup, signin, refresh rotation, google")
 - 2026-08-01: test(listing): CRUD, ownership 403, search and filters
+- 2026-08-06: test(booking): date rules, duplicates, status changes
