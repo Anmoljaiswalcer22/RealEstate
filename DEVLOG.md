@@ -48,3 +48,4 @@
 - 2026-08-06 11:46:13: worked on upload (after "test(upload): MIME, size and disguised-file checks")
 - 2026-08-07: test: unit tests for helpers and middleware
 - 2026-08-07: chore(client): scaffold Vite React app
+- 2026-08-08: chore(client): set up Tailwind CSS
