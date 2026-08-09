@@ -51,3 +51,4 @@
 - 2026-08-08: chore(client): set up Tailwind CSS
 - 2026-08-09 09:06:49: worked on client (after "chore(client): set up Tailwind CSS")
 - 2026-08-09: chore(client): proxy /api and /uploads to the backend
+- 2026-08-09: feat(client): fetch wrapper with silent token refresh
