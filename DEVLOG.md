@@ -49,3 +49,4 @@
 - 2026-08-07: test: unit tests for helpers and middleware
 - 2026-08-07: chore(client): scaffold Vite React app
 - 2026-08-08: chore(client): set up Tailwind CSS
+- 2026-08-09 09:06:49: worked on client (after "chore(client): set up Tailwind CSS")
