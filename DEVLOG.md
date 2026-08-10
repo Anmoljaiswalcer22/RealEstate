@@ -55,3 +55,4 @@
 - 2026-08-09: feat(client): redux store and user slice
 - 2026-08-09 14:04:50: worked on client (after "feat(client): redux store and user slice")
 - 2026-08-10: feat(client): app shell with router and persist gate
+- 2026-08-10: feat(ui): add Header
