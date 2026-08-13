@@ -57,3 +57,4 @@
 - 2026-08-10: feat(client): app shell with router and persist gate
 - 2026-08-10: feat(ui): add Header
 - 2026-08-12: feat(ui): add PrivateRoute
+- 2026-08-13: feat(ui): add Button, FormInput and Status components
