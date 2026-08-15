@@ -61,3 +61,4 @@
 - 2026-08-13 22:10:42: worked on ui (after "feat(ui): add Button, FormInput and Status components")
 - 2026-08-14: feat(pages): add SignUp page
 - 2026-08-15: feat(pages): add SignIn page
+- 2026-08-15: chore(client): add .env.example
