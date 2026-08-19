@@ -64,3 +64,4 @@
 - 2026-08-15: chore(client): add .env.example
 - 2026-08-15 23:07:30: worked on client (after "chore(client): add .env.example")
 - 2026-08-16: feat(auth): add Firebase client config
+- 2026-08-19: feat(ui): continue with Google button
