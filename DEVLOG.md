@@ -68,3 +68,4 @@
 - 2026-08-19: feat(pages): profile update, avatar, sign out, delete
 - 2026-08-19 13:23:12: worked on pages (after "feat(pages): profile update, avatar, sign out, delete")
 - 2026-08-19: feat(client): parallel image uploads with progress
+- 2026-08-19: feat(pages): CreateListing for create and edit
