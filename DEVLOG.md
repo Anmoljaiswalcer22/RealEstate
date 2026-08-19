@@ -66,3 +66,4 @@
 - 2026-08-16: feat(auth): add Firebase client config
 - 2026-08-19: feat(ui): continue with Google button
 - 2026-08-19: feat(pages): profile update, avatar, sign out, delete
+- 2026-08-19 13:23:12: worked on pages (after "feat(pages): profile update, avatar, sign out, delete")
