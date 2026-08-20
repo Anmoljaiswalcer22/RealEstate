@@ -74,3 +74,4 @@
 - 2026-08-19: feat(ui): add ImageSlider
 - 2026-08-20: feat(client): formatting helpers
 - 2026-08-20: feat(pages): listing page with booking form
+- 2026-08-20 12:05:02: worked on pages (after "feat(pages): listing page with booking form")
