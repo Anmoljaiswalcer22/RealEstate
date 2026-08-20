@@ -73,3 +73,4 @@
 - 2026-08-19 16:43:55: worked on ui (after "feat(ui): add ListingCard")
 - 2026-08-19: feat(ui): add ImageSlider
 - 2026-08-20: feat(client): formatting helpers
+- 2026-08-20: feat(pages): listing page with booking form
