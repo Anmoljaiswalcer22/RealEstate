@@ -78,3 +78,4 @@
 - 2026-08-20: feat(ui): add FilterSidebar
 - 2026-08-21: feat(pages): search with filters, sort and show more
 - 2026-08-21: feat(pages): home with offer, rent and sale sections
+- 2026-08-21 11:17:28: worked on pages (after "feat(pages): home with offer, rent and sale sections")
