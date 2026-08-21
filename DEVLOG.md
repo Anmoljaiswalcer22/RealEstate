@@ -76,3 +76,4 @@
 - 2026-08-20: feat(pages): listing page with booking form
 - 2026-08-20 12:05:02: worked on pages (after "feat(pages): listing page with booking form")
 - 2026-08-20: feat(ui): add FilterSidebar
+- 2026-08-21: feat(pages): search with filters, sort and show more
