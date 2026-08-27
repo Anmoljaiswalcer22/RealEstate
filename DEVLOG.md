@@ -81,3 +81,4 @@
 - 2026-08-21 11:17:28: worked on pages (after "feat(pages): home with offer, rent and sale sections")
 - 2026-08-21: feat(pages): MyBookings page with two tabs
 - 2026-08-21: feat(pages): add NotFound page
+- 2026-08-27: docs: add Postman collection
