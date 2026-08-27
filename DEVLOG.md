@@ -82,3 +82,4 @@
 - 2026-08-21: feat(pages): MyBookings page with two tabs
 - 2026-08-21: feat(pages): add NotFound page
 - 2026-08-27: docs: add Postman collection
+- 2026-08-27 15:59:08: worked on project setup (after "docs: add Postman collection")
