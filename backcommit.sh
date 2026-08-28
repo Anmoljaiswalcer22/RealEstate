@@ -2,34 +2,47 @@
 # =============================================================================
 # backcommit.sh  -  build the FullStack Estate git history across July-August
 #
-# Schedule : 7-day streaks, then a 1-2 day break, repeated from Jul 1 to Aug 31
-# Per day  : 2-3 commits at random times (10:00-23:30 IST), in time order
-# Content  : real project files committed in the build order from README §11
-#            (backend skeleton -> errors -> auth -> listings -> bookings ->
-#             uploads -> hardening -> tests -> frontend -> docs). Spare slots
-#            get a dated entry in DEVLOG.md so no commit is empty.
+# Schedule : irregular, human-looking activity. Each day is decided randomly
+#            with a few realistic habits:
+#              - working yesterday makes working today a bit more likely
+#              - weekends are quieter (but not empty)
+#              - now and then a random 2-5 day break
+#              - commits per day vary from 1 to 9 (so the graph gets
+#                different shades, not one flat colour)
+#              - commits come in "sessions" (morning / afternoon / night)
+#                spaced 5-90 minutes apart, not evenly spread
+# Content  : real project files committed in the build order from README §11.
+#            Spare slots get a dated entry in DEVLOG.md so no commit is empty.
 #
 # Usage (run from the project root, e.g. fullstack-estate/):
-#   DRY_RUN=1 bash backcommit.sh      # preview the schedule, changes nothing
+#   DRY_RUN=1 bash backcommit.sh      # preview: shows a GitHub-style calendar
 #   bash backcommit.sh                # create the commits
 #
 # Options (environment variables):
-#   YEAR=2026            year for July/August
-#   STREAK_MIN=7 STREAK_MAX=7   consecutive active days per streak
-#   GAP_MIN=1 GAP_MAX=2         days off between streaks
-#   PER_DAY_MIN=2 PER_DAY_MAX=3 commits per active day
-#   TZ_OFFSET=+0530      timezone written into the commit dates
-#   SEED=42              fixed seed -> the same schedule every run
-#   FORCE=1              allow running in a repo that already has commits
+#   YEAR=2026              year for July/August
+#   START / END            override the date range (YYYY-MM-DD)
+#   P_AFTER_ACTIVE=75      % chance to work the day after a working day
+#   P_AFTER_IDLE=55        % chance to work the day after a day off
+#   WEEKEND_DROP=15        % less likely on Sat/Sun
+#   BREAK_CHANCE=4         % chance on any day to start a longer break
+#   BREAK_MIN=2 BREAK_MAX=5    length of those breaks (days)
+#   MAX_PER_DAY=9          most commits on a single busy day
+#   TZ_OFFSET=+0530        timezone written into the commit dates
+#   SEED=1234              fixed seed -> the same schedule every run
+#                          (leave unset for a new random schedule each time)
+#   FORCE=1                allow running in a repo that already has commits
 # =============================================================================
 set -euo pipefail
 
 YEAR="${YEAR:-2026}"
 START="${START:-$YEAR-07-01}"
 END="${END:-$YEAR-08-31}"
-STREAK_MIN="${STREAK_MIN:-7}"; STREAK_MAX="${STREAK_MAX:-7}"
-GAP_MIN="${GAP_MIN:-1}";       GAP_MAX="${GAP_MAX:-2}"
-PER_DAY_MIN="${PER_DAY_MIN:-2}"; PER_DAY_MAX="${PER_DAY_MAX:-3}"
+P_AFTER_ACTIVE="${P_AFTER_ACTIVE:-75}"
+P_AFTER_IDLE="${P_AFTER_IDLE:-55}"
+WEEKEND_DROP="${WEEKEND_DROP:-15}"
+BREAK_CHANCE="${BREAK_CHANCE:-4}"
+BREAK_MIN="${BREAK_MIN:-2}"; BREAK_MAX="${BREAK_MAX:-5}"
+MAX_PER_DAY="${MAX_PER_DAY:-9}"
 TZ_OFFSET="${TZ_OFFSET:-+0530}"
 DRY_RUN="${DRY_RUN:-0}"
 FORCE="${FORCE:-0}"
@@ -38,11 +51,13 @@ FORCE="${FORCE:-0}"
 die()  { echo "ERROR: $*" >&2; exit 1; }
 rand() { R=$(( $1 + RANDOM % ($2 - $1 + 1) )); }   # result in $R (no subshell, so SEED works)
 
-# --- date helper: GNU date (Linux, Git Bash on Windows) or BSD date (macOS) --
+# --- date helpers: GNU date (Linux, Git Bash) or BSD date (macOS) ------------
 if date -d "2026-01-01 + 1 days" +%F >/dev/null 2>&1; then
   add_days() { date -d "$1 + $2 days" +%F; }
+  dow()      { date -d "$1" +%w; }               # 0 = Sunday
 else
   add_days() { date -j -v+"$2"d -f %F "$1" +%F; }
+  dow()      { date -j -f %F "$1" +%w; }
 fi
 
 # =============================================================================
@@ -133,48 +148,142 @@ DEVLOG_MSGS=(
   "docs(devlog): todo list for %s"
   "docs: update dev log"
   "docs(devlog): progress on %s"
+  "docs(devlog): ideas for %s"
+  "docs(devlog): bugs found in %s"
 )
 
+N=${#TASKS[@]}
+
 # =============================================================================
-# 2. Build the day schedule: STREAK days on, GAP days off, repeat
+# 2. All days in range + weekday of each (computed once)
 # =============================================================================
-DAYS=()
+ALL_DAYS=(); ALL_DOW=()
 d="$START"
 while [[ ! "$d" > "$END" ]]; do
-  rand "$STREAK_MIN" "$STREAK_MAX"; streak=$R
-  for ((i = 0; i < streak; i++)); do
-    [[ "$d" > "$END" ]] && break
-    DAYS+=("$d")
-    d=$(add_days "$d" 1)
+  ALL_DAYS+=("$d"); ALL_DOW+=("$(dow "$d")")
+  d=$(add_days "$d" 1)
+done
+NDAYS=${#ALL_DAYS[@]}
+
+# =============================================================================
+# 3. Random schedule: how many commits on each day (0 = day off)
+# =============================================================================
+pick_count() {              # weighted: mostly 1-3, sometimes a busy day
+  rand 1 100
+  if   (( R <= 22 )); then C=1
+  elif (( R <= 45 )); then C=2
+  elif (( R <= 63 )); then C=3
+  elif (( R <= 76 )); then C=4
+  elif (( R <= 86 )); then C=5
+  else rand 6 "$MAX_PER_DAY"; C=$R
+  fi
+}
+
+build_schedule() {
+  COUNTS=(); TOTAL=0
+  local k w p prev=1 off=0
+  for ((k = 0; k < NDAYS; k++)); do
+    w=${ALL_DOW[$k]}
+    if (( k == 0 )); then                       # first day: initial commit
+      pick_count; COUNTS[k]=$C; TOTAL=$((TOTAL + C)); continue
+    fi
+    if (( off > 0 )); then                      # inside a longer break
+      COUNTS[k]=0; off=$((off - 1)); prev=0; continue
+    fi
+    rand 1 100
+    if (( R <= BREAK_CHANCE )); then            # start a longer break
+      rand "$BREAK_MIN" "$BREAK_MAX"; off=$((R - 1)); COUNTS[k]=0; prev=0; continue
+    fi
+    if (( prev )); then p=$P_AFTER_ACTIVE; else p=$P_AFTER_IDLE; fi
+    if (( w == 0 || w == 6 )); then p=$((p - WEEKEND_DROP)); fi
+    rand 1 100
+    if (( R <= p )); then
+      pick_count; COUNTS[k]=$C; TOTAL=$((TOTAL + C)); prev=1
+    else
+      COUNTS[k]=0; prev=0
+    fi
   done
-  rand "$GAP_MIN" "$GAP_MAX"; d=$(add_days "$d" "$R")
+}
+
+# re-roll until there are enough slots for every project commit
+tries=0
+while :; do
+  build_schedule
+  (( TOTAL >= N )) && break
+  tries=$((tries + 1))
+  (( tries < 200 )) || die "Could not fit $N commits. Raise P_AFTER_ACTIVE or MAX_PER_DAY."
 done
 
 # =============================================================================
-# 3. Commit slots: 2-3 random times per day, sorted
+# 4. Commit times: sessions (morning / afternoon / night), 5-90 min apart
 # =============================================================================
-SLOTS=()
-for day in "${DAYS[@]}"; do
-  rand "$PER_DAY_MIN" "$PER_DAY_MAX"; n=$R
+SLOTS=(); ACTIVE=0
+for ((k = 0; k < NDAYS; k++)); do
+  n=${COUNTS[$k]}
+  (( n > 0 )) || continue
+  ACTIVE=$((ACTIVE + 1))
+  day=${ALL_DAYS[$k]}
+
+  rand 0 99                                     # when does today's work start?
+  if   (( R < 25 )); then rand 34200 43200      # 09:30 - 12:00
+  elif (( R < 60 )); then rand 50400 63000      # 14:00 - 17:30
+  else                    rand 70200 81000      # 19:30 - 22:30
+  fi
+  t=$R
   times=()
   for ((i = 0; i < n; i++)); do
-    # seconds between 10:00:00 and 23:30:00
-    times+=( $(( 36000 + ( (RANDOM * 32768 + RANDOM) % 48600 ) )) )
+    times+=("$t")
+    rand 1 100
+    if (( R <= 18 )); then rand 3600 10800      # took a longer break
+    else                   rand 300 5400        # 5-90 minutes later
+    fi
+    t=$((t + R))
   done
+  # ran past midnight? fall back to random times between 09:00 and 23:55
+  if (( ${times[n-1]} > 86100 )); then
+    times=()
+    for ((i = 0; i < n; i++)); do rand 32400 86100; times+=("$R"); done
+  fi
   while read -r s; do
+    s=$((s + RANDOM % 60))                      # random seconds too
     SLOTS+=("$day $(printf '%02d:%02d:%02d' $((s/3600)) $((s%3600/60)) $((s%60)))")
   done < <(printf '%s\n' "${times[@]}" | sort -n)
 done
-
-N=${#TASKS[@]}
 S=${#SLOTS[@]}
-(( S >= N )) || die "Only $S commit slots for $N planned commits. Raise PER_DAY_MAX or STREAK_MAX."
 
-echo "Schedule: ${#DAYS[@]} active days, $S commits ($N project commits + $((S - N)) dev-log entries)"
+echo "Schedule: $ACTIVE active days out of $NDAYS, $S commits ($N project commits + $((S - N)) dev-log entries)"
 echo
 
+# --- GitHub-style preview: columns are weeks, rows are Sun..Sat -------------
+print_calendar() {
+  local names=(Sun Mon Tue Wed Thu Fri Sat) r c k n ch line
+  local off=${ALL_DOW[0]}
+  local ncols=$(( (off + NDAYS + 6) / 7 ))
+  for ((r = 0; r < 7; r++)); do
+    line="${names[$r]}  "
+    for ((c = 0; c < ncols; c++)); do
+      k=$(( c * 7 + r - off ))
+      if (( k < 0 || k >= NDAYS )); then ch=" "
+      else
+        n=${COUNTS[$k]}
+        if   (( n == 0 )); then ch="·"
+        elif (( n <= 2 )); then ch="░"
+        elif (( n <= 4 )); then ch="▒"
+        elif (( n <= 6 )); then ch="▓"
+        else                    ch="█"
+        fi
+      fi
+      line+="$ch "
+    done
+    echo "$line"
+  done
+  echo "      · none  ░ 1-2  ▒ 3-4  ▓ 5-6  █ 7+"
+  echo
+}
+print_calendar
+
 # =============================================================================
-# 4. Safety checks (skipped in dry run)
+# 5. Safety checks (skipped in dry run)
 # =============================================================================
 if [[ "$DRY_RUN" != "1" ]]; then
   [[ -d server || -d client ]] || die "Run this from the project root (the folder with server/ and client/)."
@@ -202,6 +311,8 @@ serviceAccount*.json
 server/uploads/*
 !server/uploads/.gitkeep
 .DS_Store
+.git-old/
+backcommit.sh
 EOF
     echo "Created .gitignore (node_modules, .env, uploads, coverage...)."
   fi
@@ -211,7 +322,7 @@ EOF
 fi
 
 # =============================================================================
-# 5. Create the commits
+# 6. Create the commits
 # =============================================================================
 shopt -s nullglob dotglob
 
@@ -243,12 +354,13 @@ for ((i = 0; i < S; i++)); do
   if (( target > done_upto )); then
     # ---- real project commit ----
     task="${TASKS[$target]}"
-    msg="${task%%|*}"; paths="${task#*|}"
+    msg="${task%%|*}"
     if [[ "$DRY_RUN" == "1" ]]; then
       printf '%s  %s\n' "$when" "$msg"
     else
       for ((t = done_upto + 1; t <= target; t++)); do stage_paths "${TASKS[$t]#*|}"; done
       if git diff --cached --quiet; then  # file missing in your tree: keep the commit non-empty
+        [[ -f DEVLOG.md ]] || printf '# Dev log\n\n' > DEVLOG.md
         printf -- '- %s: %s\n' "${when%% *}" "$msg" >> DEVLOG.md
         git add DEVLOG.md
       fi
@@ -274,14 +386,16 @@ for ((i = 0; i < S; i++)); do
 done
 
 if [[ "$DRY_RUN" == "1" ]]; then
-  echo; echo "Dry run only. Run without DRY_RUN=1 to create the commits."
+  echo; echo "Dry run only. Run again for a different random schedule,"
+  echo "or run without DRY_RUN=1 to create the commits."
+  echo "Tip: like one? Re-run with the same SEED=<number> to get it again."
   exit 0
 fi
 
-# Anything still uncommitted goes into one last commit on the final day
+# Anything still uncommitted goes into one last commit on the final active day
 if [[ -n "$(git status --porcelain)" ]]; then
   git add -A
-  commit_at "${SLOTS[$((S - 1))]%% *} 23:45:00" "chore: final cleanup"
+  commit_at "${SLOTS[$((S - 1))]%% *} 23:57:00" "chore: final cleanup"
 fi
 
 echo "Done: $(git rev-list --count HEAD) commits from $START to $END."
@@ -289,4 +403,4 @@ echo
 echo "Next steps:"
 echo "  git log --pretty='%ad  %s' --date=format:'%a %d %b %H:%M' | less"
 echo "  git remote add origin https://github.com/<you>/fullstack-estate.git"
-echo "  git push -u origin main"
+echo "  git push -u --force origin main"
